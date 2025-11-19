@@ -14,9 +14,7 @@ export default function RootLayout() {
       <TamaguiProvider config={config} defaultTheme="light">
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="+not-found" />
-            </Stack>
+            <Stack screenOptions={{ headerShown: false }} />
           </SafeAreaProvider>
         </GestureHandlerRootView>
       </TamaguiProvider>
