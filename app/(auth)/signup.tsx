@@ -77,7 +77,7 @@ export default function SignUpScreen() {
             <Controller
               control={control}
               name="name"
-              rules={{ required: "Email is required" }}
+              rules={{ required: "Name is required" }}
               render={({ field, fieldState }) => (
                 <FieldInput
                   label="Full Name"

@@ -124,7 +124,7 @@ export default function AuthScreen() {
               <Text
                 fontSize={13}
                 color="$blue10"
-                onPress={() => router.push("/")}
+                onPress={() => router.push("/(auth)/forget-password")}
               >
                 Forgot password?
               </Text>

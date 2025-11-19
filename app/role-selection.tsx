@@ -36,7 +36,7 @@ export default function RoleSelectionScreen() {
           borderRadius="$6"
           padding="$5"
           pressStyle={{ scale: 0.98 }}
-          onPress={() => router.push("/(auth)/login")}
+          onPress={() => router.push("/(auth)/signup")}
         >
           <Card.Header alignItems="center">
             <Heart size={50} color="#1e40af" />
@@ -78,7 +78,7 @@ export default function RoleSelectionScreen() {
           borderRadius="$6"
           padding="$5"
           pressStyle={{ scale: 0.98 }}
-          onPress={() => router.push("/(auth)/login")}
+          onPress={() => router.push("/(auth)/signup")}
         >
           <Card.Header alignItems="center">
             <Stethoscope size={50} color="#1e40af" />
