@@ -17,13 +17,13 @@ export default function Index() {
     isInternetReachable: true,
   });
 
-  const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
+  //? Helper function to check if onboarding is completed
   const checkOnboardingCompleted = async () => {
     const value = await AsyncStorage.getItem("onboardingCompleted");
     return value === "true";
   };
 
+  //* Monitor network status
   useEffect(() => {
     const checkNetwork = async () => {
       const state = await Network.getNetworkStateAsync();
@@ -36,6 +36,7 @@ export default function Index() {
     return () => clearInterval(interval);
   }, []);
 
+  //! Alert user if offline
   useEffect(() => {
     if (
       networkState.isConnected === false &&
@@ -48,10 +49,9 @@ export default function Index() {
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
 
+  //? Handle redirection based on auth state and onboarding status
   const handleRedirect = useCallback(
     async (session: any) => {
-      await wait(5000);
-
       const onboardingCompleted = await checkOnboardingCompleted();
 
       if (!onboardingCompleted) {
@@ -61,7 +61,7 @@ export default function Index() {
 
       if (!session?.user) {
         setUser(null);
-        router.replace("/role-selection");
+        router.replace("/(auth)/login");
         return;
       }
 
@@ -73,13 +73,24 @@ export default function Index() {
 
       if (!profile) {
         setUser(null);
-        router.replace("/role-selection");
+        router.replace("/(auth)/login");
         return;
       }
 
       setUser(profile);
 
-      if (!profile.role) {
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id);
+
+      if (rolesError) {
+        console.error("Error fetching user roles:", rolesError);
+        router.replace("/(auth)/login");
+        return;
+      }
+
+      if (!rolesData || rolesData.length === 0) {
         router.replace("/role-selection");
       } else {
         router.replace(`/(auth)/login`);
@@ -88,6 +99,7 @@ export default function Index() {
     [router, setUser]
   );
 
+  //? Main auth flow handler
   const handleAuthFlow = useCallback(async () => {
     const {
       data: { session },
@@ -96,6 +108,7 @@ export default function Index() {
     handleRedirect(session);
   }, [handleRedirect]);
 
+  //* Initial load and auth state change listener
   useEffect(() => {
     // initial load
     handleAuthFlow();

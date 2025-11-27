@@ -50,7 +50,7 @@ export default function OnboardingScreen() {
       setCurrentIndex(currentIndex + 1);
     } else {
       await AsyncStorage.setItem("onboardingCompleted", "true");
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/signup");
     }
   };
 
@@ -59,7 +59,7 @@ export default function OnboardingScreen() {
     await AsyncStorage.setItem("onboardingCompleted", "true");
 
     // navigate to role selection / login
-    router.replace("/(auth)/login");
+    router.replace("/(auth)/signup");
   };
 
   const currentSlide = onboardingData[currentIndex];

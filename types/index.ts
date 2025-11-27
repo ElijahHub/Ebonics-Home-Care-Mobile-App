@@ -42,4 +42,7 @@ export interface AuthState {
   setLoading: (loading: boolean) => void;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  signupData: any;
+  setSignupData: (data: any) => void;
+  clearSignupData: () => void;
 }

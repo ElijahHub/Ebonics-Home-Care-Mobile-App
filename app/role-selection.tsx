@@ -1,9 +1,51 @@
+import { supabase } from "@/libs/supabase";
 import { useRouter } from "expo-router";
+import { useSearchParams } from "expo-router/build/hooks";
 import { Heart, Stethoscope } from "lucide-react-native";
 import { Button, Card, ScrollView, Text, YStack } from "tamagui";
 
+type Role = "client" | "caregiver";
+
 export default function RoleSelectionScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+
+  const handleRolesSelection = async (selectedRole: Role) => {
+    if (!userId) {
+      console.error("Error: User ID is missing from URL query.");
+      router.push("/(auth)/login");
+      return;
+    }
+
+    try {
+      // If the selected role is the default, just navigate
+      if (selectedRole === "client") {
+        router.push("/(client)");
+        return;
+      }
+
+      // 1. **CRITICAL CHANGE: Call the RPC function**
+      const { error } = await supabase.rpc("swap_user_role", {
+        target_user_id: userId,
+        old_role: "client", // The default role we want to remove
+        new_role: selectedRole, // The new role to assign
+      });
+
+      if (error) {
+        console.error("RPC Error: Failed to swap user role.", error);
+        return;
+      }
+
+      console.log(`Role successfully swapped to: ${selectedRole}`);
+      router.push("/(auth)/login");
+    } catch (error) {
+      console.error(
+        "An unexpected error occurred during role selection:",
+        error
+      );
+    }
+  };
 
   return (
     <ScrollView
@@ -36,7 +78,7 @@ export default function RoleSelectionScreen() {
           borderRadius="$6"
           padding="$5"
           pressStyle={{ scale: 0.98 }}
-          onPress={() => router.push("/(auth)/signup")}
+          onPress={() => handleRolesSelection("client")}
         >
           <Card.Header alignItems="center">
             <Heart size={50} color="#1e40af" />
@@ -78,7 +120,7 @@ export default function RoleSelectionScreen() {
           borderRadius="$6"
           padding="$5"
           pressStyle={{ scale: 0.98 }}
-          onPress={() => router.push("/(auth)/signup")}
+          onPress={() => handleRolesSelection("caregiver")}
         >
           <Card.Header alignItems="center">
             <Stethoscope size={50} color="#1e40af" />

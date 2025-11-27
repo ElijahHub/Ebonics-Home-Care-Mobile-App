@@ -1,6 +1,8 @@
 import FieldInput from "@/components/field-input";
+import { supabase } from "@/libs/supabase";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Lock, Mail, Phone, User2 } from "lucide-react-native";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +20,8 @@ type FormValues = {
 export default function SignUpScreen() {
   const router = useRouter();
 
+  const [regError, setRegError] = useState<string | null>(null);
+
   const { control, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       name: "",
@@ -28,8 +32,43 @@ export default function SignUpScreen() {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Sign-up data:", data);
+  // Initial Sign-up Screen (Don't store, just sign up)
+  const onSubmit = async (val: FormValues) => {
+    try {
+      const { email, password, name } = val;
+
+      // 1. **IMMEDIATELY CREATE THE USER**
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: {
+          // Pass extra data to the trigger via user_metadata
+          data: {
+            full_name: name.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        // Handle Supabase Auth errors
+        setRegError(error.message);
+        return;
+      }
+
+      const newUserId = data.user?.id;
+
+      if (!newUserId)
+        throw new Error("User ID was not returned after successful sign-up.");
+
+      console.log(data);
+
+      // 2. User is created (and default 'client' role is assigned by the DB trigger)
+      // Now, navigate to the selection screen
+      router.push(`/role-selection?userId=${newUserId}`);
+    } catch (error) {
+      // ... error handling
+      console.log(error);
+    }
   };
 
   return (
@@ -70,6 +109,8 @@ export default function SignUpScreen() {
               Sign up to get started with quick access to premium care services.
             </Text>
           </YStack>
+
+          {regError && <Text>{regError}</Text>}
 
           {/* FORM FIELDS */}
           <YStack gap="$1">

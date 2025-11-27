@@ -1,4 +1,5 @@
 import FieldInput from "@/components/field-input";
+import { supabase } from "@/libs/supabase";
 import { useRouter } from "expo-router";
 import { Lock, Mail } from "lucide-react-native";
 import { Controller, useForm } from "react-hook-form";
@@ -33,8 +34,69 @@ export default function AuthScreen() {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Login:", data);
+  const onSubmit = async (value: FormValues) => {
+    const { email, password } = value;
+    let userRole: string | null = null; // Will store the role fetched from the DB
+
+    try {
+      // Step 1: Authenticate the user
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (authError) {
+        console.error("Sign in error:", authError.message);
+        // Display auth error to the user
+        return;
+      }
+
+      const userId = authData.user?.id;
+      if (!userId) return;
+
+      // Step 2: Fetch the user's role(s) from the public.user_roles table (THE FIX)
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (roleError) {
+        console.error("Database Error: Failed to fetch user roles.", roleError);
+        return;
+      }
+
+      // Step 3: Determine the highest priority role
+      if (roleData && roleData.length > 0) {
+        const roles = roleData.map((r) => r.role);
+
+        // Priority check (Admin > Caregiver > Client)
+        if (roles.includes("admin")) {
+          userRole = "admin";
+        } else if (roles.includes("caregiver")) {
+          userRole = "caregiver";
+        } else if (roles.includes("client")) {
+          userRole = "client";
+        }
+      }
+
+      // Step 4: Route based on the determined role
+      switch (userRole) {
+        case "admin":
+          router.replace("/(client)/message");
+          break;
+        case "caregiver":
+          router.replace("/(client)/schedule");
+          break;
+        case "client":
+        default:
+          router.replace("/(client)"); // Default route for clients
+          break;
+      }
+    } catch (error: any) {
+      console.error("Sign in exception:", error);
+      // Handle unexpected exceptions
+    }
   };
 
   const handleGoogleSignIn = () => {
