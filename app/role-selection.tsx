@@ -2,6 +2,7 @@ import { supabase } from "@/libs/supabase";
 import { useRouter } from "expo-router";
 import { useSearchParams } from "expo-router/build/hooks";
 import { Heart, Stethoscope } from "lucide-react-native";
+import { useState } from "react";
 import { Button, Card, ScrollView, Text, YStack } from "tamagui";
 
 type Role = "client" | "caregiver";
@@ -11,6 +12,8 @@ export default function RoleSelectionScreen() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
+  const [error, setError] = useState(false);
+
   const handleRolesSelection = async (selectedRole: Role) => {
     if (!userId) {
       console.error("Error: User ID is missing from URL query.");
@@ -19,13 +22,11 @@ export default function RoleSelectionScreen() {
     }
 
     try {
-      // If the selected role is the default, just navigate
       if (selectedRole === "client") {
         router.push("/(client)");
         return;
       }
 
-      // 1. **CRITICAL CHANGE: Call the RPC function**
       const { error } = await supabase.rpc("swap_user_role", {
         target_user_id: userId,
         old_role: "client", // The default role we want to remove
@@ -34,16 +35,19 @@ export default function RoleSelectionScreen() {
 
       if (error) {
         console.error("RPC Error: Failed to swap user role.", error);
+        setError(true);
         return;
       }
 
-      console.log(`Role successfully swapped to: ${selectedRole}`);
       router.push("/(auth)/login");
     } catch (error) {
       console.error(
         "An unexpected error occurred during role selection:",
         error
       );
+      setError(true);
+    } finally {
+      setTimeout(() => setError(false), 3000);
     }
   };
 
@@ -68,6 +72,19 @@ export default function RoleSelectionScreen() {
           Let&apos;s get started. What describes you best?
         </Text>
       </YStack>
+
+      {error && (
+        <YStack
+          marginBottom="$4"
+          padding="$3"
+          backgroundColor="$red10"
+          borderRadius="$4"
+        >
+          <Text color="$red12" fontWeight="600" textAlign="center">
+            An error occurred while updating your role. Please try again.
+          </Text>
+        </YStack>
+      )}
 
       <YStack space="$6">
         {/* ========= CARD 1 ========= */}

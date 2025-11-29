@@ -2,6 +2,7 @@ import FieldInput from "@/components/field-input";
 import { supabase } from "@/libs/supabase";
 import { useRouter } from "expo-router";
 import { Lock, Mail } from "lucide-react-native";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,6 +12,7 @@ import {
   Image,
   Label,
   ScrollView,
+  Spinner,
   Text,
   XStack,
   YStack,
@@ -23,23 +25,24 @@ type FormValues = {
 
 export default function AuthScreen() {
   const router = useRouter();
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const { control, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const onSubmit = async (value: FormValues) => {
     const { email, password } = value;
-    let userRole: string | null = null; // Will store the role fetched from the DB
+    let userRole: string | null = null;
+
+    setIsLoading(true);
+    setDbError(null);
 
     try {
-      // Step 1: Authenticate the user
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email,
@@ -48,14 +51,13 @@ export default function AuthScreen() {
 
       if (authError) {
         console.error("Sign in error:", authError.message);
-        // Display auth error to the user
+        setDbError(authError.message);
         return;
       }
 
       const userId = authData.user?.id;
       if (!userId) return;
 
-      // Step 2: Fetch the user's role(s) from the public.user_roles table (THE FIX)
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
@@ -63,21 +65,12 @@ export default function AuthScreen() {
 
       if (roleError) {
         console.error("Database Error: Failed to fetch user roles.", roleError);
+        setDbError(roleError.message);
         return;
       }
 
-      // Step 3: Determine the highest priority role
       if (roleData && roleData.length > 0) {
-        const roles = roleData.map((r) => r.role);
-
-        // Priority check (Admin > Caregiver > Client)
-        if (roles.includes("admin")) {
-          userRole = "admin";
-        } else if (roles.includes("caregiver")) {
-          userRole = "caregiver";
-        } else if (roles.includes("client")) {
-          userRole = "client";
-        }
+        userRole = roleData[0].role;
       }
 
       // Step 4: Route based on the determined role
@@ -94,8 +87,19 @@ export default function AuthScreen() {
           break;
       }
     } catch (error: any) {
-      console.error("Sign in exception:", error);
-      // Handle unexpected exceptions
+      console.error("Runtime/Unexpected Error:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unknown error occurred during signup.";
+
+      setDbError(`Signup failed: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => {
+        setDbError(null);
+      }, 3000);
     }
   };
 
@@ -134,6 +138,19 @@ export default function AuthScreen() {
               Sign in to continue and manage your care services effortlessly.
             </Text>
           </YStack>
+
+          {dbError && (
+            <YStack
+              marginBottom="$4"
+              padding="$3"
+              backgroundColor="$red10"
+              borderRadius="$4"
+            >
+              <Text color="$red12" fontWeight="600" textAlign="center">
+                {dbError}
+              </Text>
+            </YStack>
+          )}
 
           {/* FORM */}
           <YStack gap="$1">
@@ -198,9 +215,11 @@ export default function AuthScreen() {
               backgroundColor="#1e40af"
               borderRadius="$4"
               onPress={handleSubmit(onSubmit)}
+              disabled={isLoading}
+              icon={isLoading ? <Spinner color="white" /> : undefined}
             >
               <Text fontSize={16} fontWeight="600" color="white">
-                Sign In
+                {isLoading ? "Signing In..." : "Sign In"}
               </Text>
             </Button>
 

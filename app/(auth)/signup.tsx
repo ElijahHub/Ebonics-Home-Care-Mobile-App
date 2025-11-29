@@ -1,48 +1,48 @@
 import FieldInput from "@/components/field-input";
 import { supabase } from "@/libs/supabase";
+import { SignupFormData } from "@/types";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Lock, Mail, Phone, User2 } from "lucide-react-native";
+import { ChevronLeft, Lock, Mail, User2 } from "lucide-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { Button, Image, ScrollView, Text, XStack, YStack } from "tamagui";
-
-type FormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-};
+import {
+  Button,
+  Image,
+  ScrollView,
+  Spinner,
+  Text,
+  XStack,
+  YStack,
+} from "tamagui";
 
 export default function SignUpScreen() {
   const router = useRouter();
 
   const [regError, setRegError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { control, handleSubmit } = useForm<FormValues>({
+  const { control, handleSubmit } = useForm<SignupFormData>({
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  // Initial Sign-up Screen (Don't store, just sign up)
-  const onSubmit = async (val: FormValues) => {
+  const onSubmit = async (val: SignupFormData) => {
+    setRegError(null);
+    setIsLoading(true);
+
     try {
       const { email, password, name } = val;
 
-      // 1. **IMMEDIATELY CREATE THE USER**
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
         options: {
-          // Pass extra data to the trigger via user_metadata
           data: {
             full_name: name.trim(),
           },
@@ -50,7 +50,7 @@ export default function SignUpScreen() {
       });
 
       if (error) {
-        // Handle Supabase Auth errors
+        console.log("error", error);
         setRegError(error.message);
         return;
       }
@@ -58,16 +58,23 @@ export default function SignUpScreen() {
       const newUserId = data.user?.id;
 
       if (!newUserId)
-        throw new Error("User ID was not returned after successful sign-up.");
+        throw new Error("An unexpected error occurred during registration.");
 
-      console.log(data);
-
-      // 2. User is created (and default 'client' role is assigned by the DB trigger)
-      // Now, navigate to the selection screen
       router.push(`/role-selection?userId=${newUserId}`);
     } catch (error) {
-      // ... error handling
-      console.log(error);
+      console.error("Runtime/Unexpected Error:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unknown error occurred during signup.";
+
+      setRegError(`Signup failed: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => {
+        setRegError(null);
+      }, 4000);
     }
   };
 
@@ -110,7 +117,18 @@ export default function SignUpScreen() {
             </Text>
           </YStack>
 
-          {regError && <Text>{regError}</Text>}
+          {regError && (
+            <YStack
+              marginBottom="$4"
+              padding="$3"
+              backgroundColor="$red10"
+              borderRadius="$4"
+            >
+              <Text color="$red12" fontWeight="600" textAlign="center">
+                {regError}
+              </Text>
+            </YStack>
+          )}
 
           {/* FORM FIELDS */}
           <YStack gap="$1">
@@ -146,24 +164,6 @@ export default function SignUpScreen() {
                   icon={<Mail size={15} color="#1e40af" />}
                   error={fieldState.error?.message}
                   placeholder="Email Address"
-                />
-              )}
-            />
-
-            {/* Phone */}
-            <Controller
-              control={control}
-              name="phone"
-              rules={{ required: "Phone Number is required" }}
-              render={({ field, fieldState }) => (
-                <FieldInput
-                  label="Phone No"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  icon={<Phone size={15} color="#1e40af" />}
-                  error={fieldState.error?.message}
-                  placeholder="Phone Number"
                 />
               )}
             />
@@ -212,9 +212,11 @@ export default function SignUpScreen() {
               backgroundColor="#1e40af"
               borderRadius="$4"
               onPress={handleSubmit(onSubmit)}
+              disabled={isLoading}
+              icon={isLoading ? <Spinner color="white" /> : undefined}
             >
               <Text fontSize={16} fontWeight="600" color="white">
-                Create Account
+                {isLoading ? "Signing Up..." : "Sign Up"}
               </Text>
             </Button>
 

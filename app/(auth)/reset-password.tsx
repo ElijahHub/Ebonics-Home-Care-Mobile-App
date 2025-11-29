@@ -1,24 +1,52 @@
 import FieldInput from "@/components/field-input";
+import { supabase } from "@/libs/supabase";
+import { ResetPasswordFormData } from "@/types";
 import { useRouter } from "expo-router";
 import { Lock } from "lucide-react-native";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, ScrollView, Text, YStack } from "tamagui";
-
-type FormValues = {
-  password: string;
-  confirmPassword: string;
-};
+import { Button, ScrollView, Spinner, Text, YStack } from "tamagui";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
-  const { control, handleSubmit, watch } = useForm<FormValues>({
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { control, handleSubmit, watch } = useForm<ResetPasswordFormData>({
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Set new password:", data.password);
-    // TODO: Call your backend/supabase API to set new password
-    router.replace("/(auth)/reset-code"); // redirect to login after success
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    const { password } = data;
+
+    setIsLoading(true);
+    setResetError(null);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: password.trim(),
+      });
+
+      if (error) {
+        setResetError(error.message);
+        return;
+      }
+
+      router.push("/(auth)/login");
+    } catch (error) {
+      console.error("Runtime/Unexpected Error:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unknown error occurred during signup.";
+      setResetError(`Verification failed: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => {
+        setResetError(null);
+      }, 4000);
+    }
   };
 
   const passwordValue = watch("password");
@@ -42,6 +70,19 @@ export default function ResetPasswordScreen() {
           Enter your new password below and confirm it.
         </Text>
       </YStack>
+
+      {resetError && (
+        <YStack
+          marginTop="$4"
+          padding="$3"
+          backgroundColor="#FEE2E2"
+          borderRadius="$4"
+        >
+          <Text color="#B91C1C" fontWeight="600" textAlign="center">
+            {resetError}
+          </Text>
+        </YStack>
+      )}
 
       <YStack gap="$4">
         <Controller
@@ -88,9 +129,11 @@ export default function ResetPasswordScreen() {
           backgroundColor="$blue10"
           borderRadius="$4"
           onPress={handleSubmit(onSubmit)}
+          disabled={isLoading}
+          icon={isLoading ? <Spinner color="$background" /> : undefined}
         >
           <Text color="$background" fontWeight="600">
-            Reset Password
+            {isLoading ? "Resetting..." : "Reset Password"}
           </Text>
         </Button>
       </YStack>
