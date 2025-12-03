@@ -61,7 +61,7 @@ export default function Index() {
 
       if (!session?.user) {
         setUser(null);
-        router.replace("/(auth)/login");
+        router.replace("/auth/login");
         return;
       }
 
@@ -73,7 +73,7 @@ export default function Index() {
 
       if (!profile) {
         setUser(null);
-        router.replace("/(auth)/login");
+        router.replace("/auth/login");
         return;
       }
 
@@ -86,14 +86,14 @@ export default function Index() {
 
       if (rolesError) {
         console.error("Error fetching user roles:", rolesError);
-        router.replace("/(auth)/login");
+        router.replace("/auth/login");
         return;
       }
 
       if (!rolesData || rolesData.length === 0) {
         router.replace("/role-selection");
       } else {
-        router.replace(`/(auth)/login`);
+        router.replace(`/auth/login`);
       }
     },
     [router, setUser]

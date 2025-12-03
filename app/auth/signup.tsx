@@ -95,7 +95,7 @@ export default function SignUpScreen() {
         >
           {/* Back Button */}
           <TouchableOpacity
-            onPress={() => router.push("/(auth)/login")}
+            onPress={() => router.push("/auth/login")}
             style={{ position: "absolute", top: 40, left: 20 }}
           >
             <ChevronLeft size={28} color="black" />
@@ -262,7 +262,7 @@ export default function SignUpScreen() {
                 fontSize={14}
                 color="$blue10"
                 fontWeight="700"
-                onPress={() => router.push("/(auth)/login")}
+                onPress={() => router.push("/auth/login")}
               >
                 Log In
               </Text>

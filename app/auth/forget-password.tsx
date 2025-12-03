@@ -35,7 +35,7 @@ export default function ForgotPasswordScreen() {
       }
 
       router.push({
-        pathname: "/(auth)/reset-code",
+        pathname: "/auth/reset-code",
         params: { email },
       });
     } catch (error) {

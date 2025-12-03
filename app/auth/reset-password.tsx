@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { Lock } from "lucide-react-native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, ScrollView, Spinner, Text, YStack } from "tamagui";
+import { Button, ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function ResetPasswordScreen() {
         return;
       }
 
-      router.push("/(auth)/login");
+      router.push("/auth/login");
     } catch (error) {
       console.error("Runtime/Unexpected Error:", error);
 
@@ -136,6 +136,19 @@ export default function ResetPasswordScreen() {
             {isLoading ? "Resetting..." : "Reset Password"}
           </Text>
         </Button>
+
+        <YStack alignItems="center" marginTop="$6">
+          <XStack gap="$1">
+            <Text
+              fontSize={14}
+              color="$blue10"
+              fontWeight="700"
+              onPress={() => router.push("/auth/login")}
+            >
+              Login Instead
+            </Text>
+          </XStack>
+        </YStack>
       </YStack>
     </ScrollView>
   );

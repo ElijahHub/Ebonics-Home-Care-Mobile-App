@@ -93,7 +93,7 @@ export default function VerificationScreen() {
 
     if (!email) {
       console.log("Email not found. Please start over.");
-      router.push("/(auth)/forget-password");
+      router.push("/auth/forget-password");
       return;
     }
 
@@ -115,7 +115,7 @@ export default function VerificationScreen() {
 
       console.log("Verification Success", authData);
 
-      router.push("/(auth)/reset-password");
+      router.push("/auth/reset-password");
     } catch (error) {
       console.error("Runtime/Unexpected Error:", error);
 
@@ -149,7 +149,7 @@ export default function VerificationScreen() {
 
       {/* Back Button */}
       <TouchableOpacity
-        onPress={() => router.push("/(auth)/forget-password")}
+        onPress={() => router.push("/auth/forget-password")}
         style={{ position: "absolute", top: 40, left: 20 }}
       >
         <ChevronLeft size={28} color="black" />

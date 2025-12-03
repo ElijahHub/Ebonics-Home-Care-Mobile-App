@@ -1,157 +1,241 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { ChevronRight, Heart, Home, Pill } from "lucide-react-native";
 import { useState } from "react";
-import { Dimensions } from "react-native";
-import { Button, Image, Text, XStack, YStack } from "tamagui";
+import Animated, { FadeIn, FadeOut, ZoomIn } from "react-native-reanimated";
+import { AnimatePresence, Button, Stack, Text, XStack, YStack } from "tamagui";
 
-const { width } = Dimensions.get("window");
-
-const onboardingData = [
+const slides = [
   {
     id: 1,
-    title: "Welcome to CareEase!",
-    description:
-      "Your go-to app for managing home care with ease. Track your schedule, connect with patients, and deliver the best care right from your fingertips.",
-    image:
-      "https://images.pexels.com/photos/6647035/pexels-photo-6647035.jpeg?auto=compress&cs=tinysrgb&w=800",
+    type: "welcome",
+    title: "Welcome to CareHub",
+    subtitle:
+      "Empowering independence through compassionate, personalized home care",
+    icon: Heart,
+    color: "#0284C7",
   },
   {
     id: 2,
-    title: "Find Quality Care",
-    description:
-      "Connect with experienced, vetted caregivers in your area. Browse profiles, read reviews, and find the perfect match for your loved ones.",
-    image:
-      "https://images.pexels.com/photos/7551659/pexels-photo-7551659.jpeg?auto=compress&cs=tinysrgb&w=800",
+    type: "mission",
+    title: "Our Mission",
+    content:
+      "We believe everyone deserves quality care in the comfort of their own home. Our team of dedicated professionals is committed to providing compassionate support that enhances independence and improves quality of life.",
+    icon: Home,
+    color: "#0284C7",
   },
   {
     id: 3,
-    title: "Flexible Scheduling",
-    description:
-      "Book care on your terms. Schedule visits, manage appointments, and get real-time updates on caregiver arrivals.",
-    image:
-      "https://images.pexels.com/photos/4173239/pexels-photo-4173239.jpeg?auto=compress&cs=tinysrgb&w=800",
+    type: "service",
+    title: "Personal Care",
+    content:
+      "Assistance with dressing, bathing, grooming, and other dalignItemsly living activities",
+    icon: Heart,
+    color: "#FF6B6B",
   },
   {
     id: 4,
-    title: "Secure & Trusted",
-    description:
-      "Your safety is our priority. All caregivers are background-checked, insured, and trained to provide professional care.",
-    image:
-      "https://images.pexels.com/photos/7551586/pexels-photo-7551586.jpeg?auto=compress&cs=tinysrgb&w=800",
+    type: "service",
+    title: "Medication Management",
+    content:
+      "Organized medication schedules, reminders, and health support to ensure wellness",
+    icon: Pill,
+    color: "#4ECDC4",
+  },
+  {
+    id: 5,
+    type: "service",
+    title: "Companionship & Support",
+    content:
+      "Social engagement, emotional support, and meaningful interactions at home",
+    icon: Home,
+    color: "#95E1D3",
+  },
+  {
+    id: 6,
+    type: "features",
+    title: "Why Choose Us",
+    features: [
+      "Licensed and background-checked caregivers",
+      "24/7 support and emergency response",
+      "Personalized care plans talilored to your needs",
+      "Transparent pricing with no hidden fees",
+    ],
+    icon: Heart,
+    color: "#0284C7",
   },
 ];
 
 export default function OnboardingScreen() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
+  const [current, setCurrent] = useState(0);
 
-  const handleNext = async () => {
-    if (currentIndex < onboardingData.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      await AsyncStorage.setItem("onboardingCompleted", "true");
-      router.replace("/(auth)/signup");
-    }
+  const slide = slides[current];
+  const Icon = slide.icon;
+  const isLast = current === slides.length - 1;
+
+  const next = () => {
+    if (isLast) return handleComplete();
+    setCurrent((p) => p + 1);
+  };
+
+  const handleComplete = async () => {
+    await AsyncStorage.setItem("onboardingCompleted", "true");
+    router.replace("/auth/signup");
   };
 
   const handleSkip = async () => {
-    // mark onboarding as completed
     await AsyncStorage.setItem("onboardingCompleted", "true");
-
-    // navigate to role selection / login
-    router.replace("/(auth)/signup");
+    router.replace("/auth/signup");
   };
 
-  const currentSlide = onboardingData[currentIndex];
-
   return (
-    <YStack flex={1} background="$background">
-      {/* Skip button */}
-      <Button
-        position="absolute"
-        top={60}
-        right={20}
-        zIndex={10}
-        size="$2"
-        onPress={handleSkip}
-        chromeless
-      >
-        <Text fontSize={16} fontWeight="600" color="$primary">
-          Skip
-        </Text>
-      </Button>
-
-      {/* Image section */}
-      <YStack
-        width={width}
-        height={width * 1.2}
-        borderBottomLeftRadius={30}
-        borderBottomRightRadius={30}
-        overflow="hidden"
-      >
-        <Image
-          source={{ uri: currentSlide.image }}
-          width="100%"
-          height="100%"
-          resizeMode="cover"
-        />
+    <Stack flex={1} background="#fff" paddingTop="$6" paddingBottom="$4">
+      {/* Header Icon */}
+      <YStack alignItems="center" paddingVertical="$6">
+        <Animated.View entering={ZoomIn.duration(600)}>
+          <Stack
+            width={100}
+            height={100}
+            alignItems="center"
+            justifyContent="center"
+            borderRadius={50}
+            background={`${slide.color}20`}
+            shadowColor="#000"
+            shadowOpacity={0.1}
+            shadowRadius={10}
+          >
+            <Icon size={52} color={slide.color} strokeWidth={1.5} />
+          </Stack>
+        </Animated.View>
       </YStack>
 
-      {/* Content section */}
-      <YStack
-        flex={1}
-        paddingHorizontal="$6"
-        paddingTop="$8"
-        alignItems="center"
-      >
-        <Text
-          fontSize={28}
-          fontWeight="700"
-          color="$textPrimary"
-          textAlign="center"
-          marginBottom="$4"
+      {/* Slide Content */}
+      <AnimatePresence>
+        <Animated.View
+          key={slide.id}
+          entering={FadeIn.duration(400).springify()}
+          exiting={FadeOut.duration(200)}
+          style={{ flex: 1, paddingHorizontal: 24 }}
         >
-          {currentSlide.title}
-        </Text>
+          <YStack alignItems="center" gap="$3">
+            <Text
+              fontSize={32}
+              fontWeight="700"
+              textAlign="center"
+              color="#0C2340"
+            >
+              {slide.title}
+            </Text>
 
-        <Text
-          fontSize={16}
-          color="$textSecondary"
-          textAlign="center"
-          lineHeight={24}
-          marginBottom="$8"
-        >
-          {currentSlide.description}
-        </Text>
+            {slide.type === "welcome" && (
+              <Text
+                fontSize={16}
+                textAlign="center"
+                color="#0C5080"
+                lineHeight={24}
+              >
+                {slide.subtitle}
+              </Text>
+            )}
 
-        {/* Pagination dots */}
-        <XStack gap="$2" marginBottom="$8">
-          {onboardingData.map((_, index) => (
-            <YStack
-              key={index}
-              width={index === currentIndex ? 24 : 8}
-              height={8}
-              borderRadius={4}
-              background={index === currentIndex ? "$primary" : "$muted"}
-            />
-          ))}
-        </XStack>
+            {["mission", "service"].includes(slide.type) && (
+              <Text
+                fontSize={16}
+                textAlign="center"
+                color="#475569"
+                lineHeight={26}
+              >
+                {slide.content}
+              </Text>
+            )}
 
-        {/* Next / Get Started button */}
+            {slide.type === "features" && (
+              <YStack marginVertical="$3" gap="$3" width="100%">
+                {slide.features?.map((f, i) => (
+                  <XStack key={i} gap="$2">
+                    <Stack
+                      width={8}
+                      height={8}
+                      borderRadius={4}
+                      background="#0284C7"
+                      marginTop={6}
+                    />
+                    <Text
+                      flex={1}
+                      color="#475569"
+                      lineHeight={22}
+                      fontSize={15}
+                    >
+                      {f}
+                    </Text>
+                  </XStack>
+                ))}
+              </YStack>
+            )}
+          </YStack>
+        </Animated.View>
+      </AnimatePresence>
+
+      {/* Pagination Dots */}
+      <XStack justifyContent="center" marginVertical="$3" gap="$2">
+        {slides.map((_, idx) => (
+          <Animated.View
+            key={idx}
+            entering={FadeIn}
+            style={{
+              width: idx === current ? 26 : 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: idx === current ? "#0284C7" : "#E2E8F0",
+              marginHorizontal: 3,
+            }}
+          />
+        ))}
+      </XStack>
+
+      {/* Buttons */}
+      <XStack paddingHorizontal="$4" gap="$3" marginBottom="$10">
         <Button
-          width="100%"
-          backgroundColor="$primary"
-          borderRadius={12}
-          paddingVertical="$4"
-          onPress={handleNext}
+          flex={0.35}
+          background="#F1F5F9"
+          borderRadius="$4"
+          pressStyle={{ scale: 0.96 }}
+          onPress={() => handleSkip()}
         >
-          <Text fontSize={16} fontWeight="600" color="$background">
-            {currentIndex === onboardingData.length - 1
-              ? "Get Started"
-              : "Next"}
+          <Text color="#475569" fontWeight="600">
+            Skip
           </Text>
         </Button>
-      </YStack>
-    </YStack>
+
+        <Button
+          flex={0.65}
+          borderRadius="$4"
+          onPress={next}
+          pressStyle={{ scale: 0.97 }}
+        >
+          <LinearGradient
+            colors={["#0284C7", "#0369A1"]}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 14,
+              borderRadius: 12,
+              width: "100%",
+            }}
+          >
+            <Text color="white" fontWeight="600" fontSize={16}>
+              {isLast ? "Get Started" : "Next"}
+            </Text>
+
+            {!isLast && (
+              <ChevronRight size={20} color="#fff" style={{ marginLeft: 6 }} />
+            )}
+          </LinearGradient>
+        </Button>
+      </XStack>
+    </Stack>
   );
 }

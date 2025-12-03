@@ -17,13 +17,13 @@ export default function RoleSelectionScreen() {
   const handleRolesSelection = async (selectedRole: Role) => {
     if (!userId) {
       console.error("Error: User ID is missing from URL query.");
-      router.push("/(auth)/login");
+      router.push("/auth/login");
       return;
     }
 
     try {
       if (selectedRole === "client") {
-        router.push("/(client)");
+        router.push("/client");
         return;
       }
 
@@ -39,7 +39,8 @@ export default function RoleSelectionScreen() {
         return;
       }
 
-      router.push("/(auth)/login");
+      //TODO: Redirect to caregiver onboarding flow
+      router.push("/auth/login");
     } catch (error) {
       console.error(
         "An unexpected error occurred during role selection:",

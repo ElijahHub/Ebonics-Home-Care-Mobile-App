@@ -2,36 +2,16 @@ import { Tabs } from "expo-router";
 import { Calendar, Home, MessageSquare, Settings } from "lucide-react-native";
 
 export default function TabLayout() {
-  //   const [loading, setLoading] = useState(true);
-
-  //   useEffect(() => {
-  //     const checkAuth = async () => {
-  //       const {
-  //         data: { session },
-  //       } = await supabase.auth.getSession();
-
-  //       if (!session) {
-  //         router.replace("/login"); // redirect if not logged in
-  //       }
-
-  //       setLoading(false);
-  //     };
-
-  //     checkAuth();
-  //   }, []);
-
-  //   if (loading) return null; // you can add a splash loader if you want
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#2196F3",
         tabBarInactiveTintColor: "#9E9E9E",
-        tabBarShowLabel: false, // ⛔ hides titles
+        tabBarShowLabel: false,
         tabBarStyle: {
           height: 80,
-          paddingBottom: 20, // keeps icons above nav bar
+          paddingBottom: 20,
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 0,
@@ -46,6 +26,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="schedule"
         options={{
@@ -54,6 +35,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="message"
         options={{
@@ -62,6 +44,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="settings"
         options={{

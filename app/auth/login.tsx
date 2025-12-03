@@ -73,17 +73,21 @@ export default function AuthScreen() {
         userRole = roleData[0].role;
       }
 
+      console.log(userRole);
+
       // Step 4: Route based on the determined role
       switch (userRole) {
         case "admin":
-          router.replace("/(client)/message");
+          router.replace("/client/message");
           break;
         case "caregiver":
-          router.replace("/(client)/schedule");
+          router.replace("/client/schedule");
           break;
         case "client":
+          router.replace("/client"); // Default route for clients
+          break;
         default:
-          router.replace("/(client)"); // Default route for clients
+          router.replace("/client"); // Default route for clients
           break;
       }
     } catch (error: any) {
@@ -203,7 +207,7 @@ export default function AuthScreen() {
               <Text
                 fontSize={13}
                 color="$blue10"
-                onPress={() => router.push("/(auth)/forget-password")}
+                onPress={() => router.push("/auth/forget-password")}
               >
                 Forgot password?
               </Text>
@@ -266,7 +270,7 @@ export default function AuthScreen() {
                 fontSize={14}
                 color="$blue10"
                 fontWeight="700"
-                onPress={() => router.push("/(auth)/signup")}
+                onPress={() => router.push("/auth/signup")}
               >
                 Sign Up
               </Text>
