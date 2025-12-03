@@ -26,7 +26,7 @@ export default function RootLayout() {
 
   // Redirect if user is NOT authenticated
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/auth/login" />;
   }
 
   // If logged in → show tabs

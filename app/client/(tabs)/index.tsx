@@ -1,4 +1,5 @@
 import ActionCard from "@/components/action-card";
+import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "expo-router";
 import {
   Bell,
@@ -14,13 +15,19 @@ import { Text, XStack, YStack } from "tamagui";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { signOut } = useAuthStore();
 
   const [notificationCount] = useState(3);
+
+  const logOut = async () => {
+    await signOut();
+    router.push("/auth/login");
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-        <YStack padding="$5" space="$4">
+        <YStack padding="$5" gap="$4">
           {/* HEADER */}
           <XStack
             justifyContent="space-between"
@@ -36,13 +43,13 @@ export default function HomeScreen() {
               </Text>
             </YStack>
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+            <TouchableOpacity onPress={() => logOut()}>
               <LogOut size={26} color="#6B7280" />
             </TouchableOpacity>
           </XStack>
 
           {/* QUICK ACTIONS */}
-          <YStack space="$2" marginTop="$4">
+          <YStack gap="$2" marginTop="$4">
             <Text
               fontSize="$2"
               fontWeight="700"
@@ -60,7 +67,7 @@ export default function HomeScreen() {
               }
               title="New Care Request"
               subtitle="Schedule a visit"
-              onPress={() => router.push("/(client)")}
+              onPress={() => router.push("/client")}
             />
 
             <ActionCard
@@ -71,7 +78,7 @@ export default function HomeScreen() {
               }
               title="View Requests"
               subtitle="Track your submitted requests"
-              onPress={() => router.push("/(client)")}
+              onPress={() => router.push("/client")}
             />
 
             <ActionCard
@@ -82,7 +89,7 @@ export default function HomeScreen() {
               }
               title="View Caregivers"
               subtitle="See assigned caregivers"
-              onPress={() => router.push("/(client)")}
+              onPress={() => router.push("/client")}
             />
 
             <ActionCard
@@ -106,12 +113,12 @@ export default function HomeScreen() {
                     }`
                   : "No new alerts"
               }
-              onPress={() => router.push("/(client)/message")}
+              onPress={() => router.push("/client/message")}
             />
           </YStack>
 
           {/* INSTRUCTIONS SECTION */}
-          <YStack space="$3" marginTop="$6" marginBottom="$10">
+          <YStack gap="$3" marginTop="$6" marginBottom="$10">
             <Text fontSize="$4" fontWeight="700" color="$gray700">
               Helpful Tips
             </Text>
@@ -132,7 +139,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={styles.chatBubble}
         activeOpacity={0.9}
-        onPress={() => router.push("/(client)/message")}
+        onPress={() => router.push("/client/message")}
       >
         <MessageCircle size={30} color="white" />
       </TouchableOpacity>
